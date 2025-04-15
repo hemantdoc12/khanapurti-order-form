@@ -1,0 +1,91 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Khana Purti Order</title>
+  <style>
+    body { font-family: Roboto, sans-serif; background: #fff; margin: 0; padding: 20px; }
+    header { background: #FF6200; color: white; padding: 10px; text-align: center; }
+    form { max-width: 500px; margin: auto; }
+    label { display: block; margin: 10px 0 5px; }
+    input, select, textarea { width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box; }
+    #total { font-weight: bold; }
+    button { background: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; width: 100%; }
+    button:hover { background: #45a049; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🍛 Khana Purti Order Form</h1>
+    <p>Fresh North Indian & Chinese dishes, delivered!</p>
+  </header>
+  <form id="orderForm">
+    <label>Name *</label>
+    <input type="text" id="name" required>
+    <label>WhatsApp Number *</label>
+    <input type="tel" id="phone" pattern="[0-9]{10}" title="Enter 10 digits (e.g., 9876543210)" required>
+    <label>Delivery Address *</label>
+    <textarea id="address" rows="4" required></textarea>
+    <label>Butter Chicken (₹250)</label>
+    <select id="butterChicken"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select>
+    <label>Lacha Paratha (₹50)</label>
+    <select id="lachaParatha"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select>
+    <label>Chicken Momos (₹150)</label>
+    <select id="chickenMomos"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select>
+    <label>Veg Manchurian (₹180)</label>
+    <select id="vegManchurian"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select>
+    <label>Paneer Tikka (₹200)</label>
+    <select id="paneerTikka"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select>
+    <label>Delivery Time *</label>
+    <select id="deliveryTime" required>
+      <option value="12:00 PM - 1:00 PM">12:00 PM - 1:00 PM</option>
+      <option value="1:00 PM - 2:00 PM">1:00 PM - 2:00 PM</option>
+      <option value="6:00 PM - 7:00 PM">6:00 PM - 7:00 PM</option>
+      <option value="7:00 PM - 8:00 PM">7:00 PM - 8:00 PM</option>
+    </select>
+    <p>Total: ₹<span id="total">0</span></p>
+    <button type="submit">Submit Order</button>
+  </form>
+  <script>
+    const prices = {
+      butterChicken: 250,
+      lachaParatha: 50,
+      chickenMomos: 150,
+      vegManchurian: 180,
+      paneerTikka: 200
+    };
+    function updateTotal() {
+      let total = 0;
+      Object.keys(prices).forEach(id => {
+        const qty = parseInt(document.getElementById(id).value) || 0;
+        total += qty * prices[id];
+      });
+      document.getElementById('total').textContent = total;
+    }
+    document.querySelectorAll('select').forEach(select => {
+      select.addEventListener('change', updateTotal);
+    });
+    document.getElementById('orderForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = {
+        timestamp: new Date().toISOString(),
+        name: document.getElementById('name').value,
+        phone: document.getElementById('phone').value,
+        address: document.getElementById('address').value,
+        butterChicken: document.getElementById('butterChicken').value,
+        lachaParatha: document.getElementById('lachaParatha').value,
+        chickenMomos: document.getElementById('chickenMomos').value,
+        vegManchurian: document.getElementById('vegManchurian').value,
+        paneerTikka: document.getElementById('paneerTikka').value,
+        deliveryTime: document.getElementById('deliveryTime').value,
+        total: document.getElementById('total').textContent
+      };
+      alert('Order submitted! Total: ₹' + formData.total + '. Check WhatsApp for confirmation.');
+      // Placeholder for Sheet integration
+    });
+  </script>
+</body>
+</html>
+    
