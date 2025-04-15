@@ -83,23 +83,23 @@
       total: document.getElementById('total').textContent
     };
     try {
-      console.log('Sending formData:', formData); // Debug log
-      const response = await fetch('https://script.google.com/macros/s/AKfycbyl1R1jPJSpfIXF5lw99KzNSCC_xvekT3_FusNBzROYfVUvJglBon_anMnDwbiJCirjaw/exec', {
+      console.log('Sending formData:', formData); // Debug
+      const response = await fetch('https://script.google.com/macros/s/AKfycbwEweLQY62mVoOUO5lQharRvjjarAbMw5ohWj48yy1HtMQcqQgk8tmLIiRYl8WO7UTF/exec', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
         mode: 'cors'
       });
-      console.log('Fetch response:', response); // Debug log
+      console.log('Fetch response:', response); // Debug
       const result = await response.json();
-      console.log('Fetch result:', result); // Debug log
+      console.log('Fetch result:', result); // Debug
       if (result.status === 'success') {
         alert('Order submitted! Total: ₹' + formData.total + '. Saved to our system.');
       } else {
         alert('Error saving order: ' + result.message);
       }
     } catch (error) {
-      console.error('Fetch error:', error); // Debug log
+      console.error('Fetch error:', error); // Debug
       alert('Connection error: ' + error.message + '. Please try again.');
     }
   });
