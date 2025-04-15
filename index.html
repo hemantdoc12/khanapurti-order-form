@@ -49,43 +49,57 @@
     <button type="submit">Submit Order</button>
   </form>
   <script>
-    const prices = {
-      butterChicken: 250,
-      lachaParatha: 50,
-      chickenMomos: 150,
-      vegManchurian: 180,
-      paneerTikka: 200
+  const prices = {
+    butterChicken: 250,
+    lachaParatha: 50,
+    chickenMomos: 150,
+    vegManchurian: 180,
+    paneerTikka: 200
+  };
+  function updateTotal() {
+    let total = 0;
+    Object.keys(prices).forEach(id => {
+      const qty = parseInt(document.getElementById(id).value) || 0;
+      total += qty * prices[id];
+    });
+    document.getElementById('total').textContent = total;
+  }
+  document.querySelectorAll('select').forEach(select => {
+    select.addEventListener('change', updateTotal);
+  });
+  document.getElementById('orderForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = {
+      timestamp: new Date().toISOString(),
+      name: document.getElementById('name').value,
+      phone: document.getElementById('phone').value,
+      address: document.getElementById('address').value,
+      butterChicken: document.getElementById('butterChicken').value,
+      lachaParatha: document.getElementById('lachaParatha').value,
+      chickenMomos: document.getElementById('chickenMomos').value,
+      vegManchurian: document.getElementById('vegManchurian').value,
+      paneerTikka: document.getElementById('paneerTikka').value,
+      deliveryTime: document.getElementById('deliveryTime').value,
+      total: document.getElementById('total').textContent
     };
-    function updateTotal() {
-      let total = 0;
-      Object.keys(prices).forEach(id => {
-        const qty = parseInt(document.getElementById(id).value) || 0;
-        total += qty * prices[id];
+    try {
+      const response = await fetch('https://script.google.com/macros/s/AKfycbyimOO1iEEJVOg7THfEVMPhrmyUyHTNItpa2J07T9vSA9Ado1aU-q2J2LjvwcuR0r4-/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+        mode: 'cors'
       });
-      document.getElementById('total').textContent = total;
+      const result = await response.json();
+      if (result.status === 'success') {
+        alert('Order submitted! Total: ₹' + formData.total + '. Check WhatsApp for confirmation.');
+      } else {
+        alert('Error saving order: ' + result.message);
+      }
+    } catch (error) {
+      alert('Network error: ' + error.message);
     }
-    document.querySelectorAll('select').forEach(select => {
-      select.addEventListener('change', updateTotal);
-    });
-    document.getElementById('orderForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const formData = {
-        timestamp: new Date().toISOString(),
-        name: document.getElementById('name').value,
-        phone: document.getElementById('phone').value,
-        address: document.getElementById('address').value,
-        butterChicken: document.getElementById('butterChicken').value,
-        lachaParatha: document.getElementById('lachaParatha').value,
-        chickenMomos: document.getElementById('chickenMomos').value,
-        vegManchurian: document.getElementById('vegManchurian').value,
-        paneerTikka: document.getElementById('paneerTikka').value,
-        deliveryTime: document.getElementById('deliveryTime').value,
-        total: document.getElementById('total').textContent
-      };
-      alert('Order submitted! Total: ₹' + formData.total + '. Check WhatsApp for confirmation.');
-      // Placeholder for Sheet integration
-    });
-  </script>
+  });
+</script>
 </body>
 </html>
     
