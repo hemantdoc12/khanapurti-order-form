@@ -83,18 +83,23 @@
       total: document.getElementById('total').textContent
     };
     try {
+      console.log('Sending formData:', formData); // Debug log
       const response = await fetch('https://script.google.com/macros/s/AKfycbyl1R1jPJSpfIXF5lw99KzNSCC_xvekT3_FusNBzROYfVUvJglBon_anMnDwbiJCirjaw/exec', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    })
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+        mode: 'cors'
+      });
+      console.log('Fetch response:', response); // Debug log
       const result = await response.json();
+      console.log('Fetch result:', result); // Debug log
       if (result.status === 'success') {
-        alert('Order submitted! Total: ₹' + formData.total + '. Saved to our system. Check WhatsApp for confirmation.');
+        alert('Order submitted! Total: ₹' + formData.total + '. Saved to our system.');
       } else {
         alert('Error saving order: ' + result.message);
       }
     } catch (error) {
+      console.error('Fetch error:', error); // Debug log
       alert('Connection error: ' + error.message + '. Please try again.');
     }
   });
