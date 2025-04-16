@@ -10,6 +10,7 @@
   <header>
     <h1>🍛 Khana Purti Order Dashboard</h1>
     <p>Live Kitchen Orders</p>
+    <button id="logout" style="position: absolute; top: 20px; right: 20px;">Logout</button>
   </header>
   <div class="container">
     <div class="tables">
@@ -86,6 +87,7 @@
   <!-- Firebase UMD SDK (v8.10.1) -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <!-- jsPDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   
@@ -106,6 +108,24 @@
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
     const { jsPDF } = window.jspdf;
+
+    // Check authentication
+    firebase.auth().onAuthStateChanged(user => {
+      if (!user) {
+        window.location.href = 'login.html?return=dashboard.html';
+      }
+    });
+
+    // Logout
+    document.getElementById('logout').addEventListener('click', async () => {
+      try {
+        await firebase.auth().signOut();
+        window.location.href = 'login.html?return=dashboard.html';
+      } catch (error) {
+        document.getElementById('message').textContent = 'Error: ' + error.message;
+        console.error('Logout error:', error);
+      }
+    });
 
     // Load menu to map IDs to names
     let menuMap = {};
@@ -200,7 +220,6 @@
       const statuses = ['received', 'pending', 'preparing', 'delivered'];
       const counts = { received: 0, pending: 0, preparing: 0, delivered: 0 };
       
-      // Fetch all orders
       Promise.all(statuses.map(status => 
         database.ref(`orders/${status}`).once('value').then(snapshot => {
           const orders = snapshot.val() || {};
@@ -215,7 +234,6 @@
           return { status, count: counts[status] };
         })
       )).then(() => {
-        // Generate PDF
         doc.setFontSize(16);
         doc.text('Khana Purti Order Summary', 20, 20);
         doc.setFontSize(12);
