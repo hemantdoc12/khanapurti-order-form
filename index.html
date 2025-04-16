@@ -27,16 +27,7 @@
     <input type="tel" id="phone" pattern="[0-9]{10}" title="Enter 10 digits (e.g., 9876543210)" required>
     <label>Delivery Address *</label>
     <textarea id="address" rows="4" required></textarea>
-    <label>Butter Chicken (₹250)</label>
-    <select id="butterChicken"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select>
-    <label>Lacha Paratha (₹50)</label>
-    <select id="lachaParatha"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select>
-    <label>Chicken Momos (₹150)</label>
-    <select id="chickenMomos"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select>
-    <label>Veg Manchurian (₹180)</label>
-    <select id="vegManchurian"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select>
-    <label>Paneer Tikka (₹200)</label>
-    <select id="paneerTikka"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select>
+    <div id="menuItems"></div>
     <label>Delivery Time *</label>
     <select id="deliveryTime" required>
       <option value="12:00 PM - 1:00 PM">12:00 PM - 1:00 PM</option>
@@ -49,7 +40,7 @@
   </form>
   <p id="message"></p>
 
-  <!-- Firebase UMD SDK (v8.10.1, non-modular) -->
+  <!-- Firebase UMD SDK (v8.10.1) -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   
@@ -70,25 +61,46 @@
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
+    // Load dynamic menu
+    let prices = {};
+    function loadMenu() {
+      database.ref('menu/daily').once('value', snapshot => {
+        const menu = snapshot.val() || [];
+        const menuItemsDiv = document.getElementById('menuItems');
+        menuItemsDiv.innerHTML = '';
+        menu.forEach(item => {
+          prices[item.id] = item.price;
+          const label = document.createElement('label');
+          label.textContent = `${item.name} (₹${item.price})`;
+          const select = document.createElement('select');
+          select.id = item.id;
+          select.name = item.id;
+          for (let i = 0; i <= 5; i++) {
+            const option = document.createElement('option');
+            option.value = i;
+            option.textContent = i;
+            select.appendChild(option);
+          }
+          menuItemsDiv.appendChild(label);
+          menuItemsDiv.appendChild(select);
+          select.addEventListener('change', updateTotal);
+        });
+        updateTotal();
+      }, error => {
+        console.error('Menu load error:', error);
+        document.getElementById('message').textContent = 'Error loading menu: ' + error.message;
+      });
+    }
+
     // Live total calculation
-    const prices = {
-      butterChicken: 250,
-      lachaParatha: 50,
-      chickenMomos: 150,
-      vegManchurian: 180,
-      paneerTikka: 200
-    };
     function updateTotal() {
       let total = 0;
       Object.keys(prices).forEach(id => {
-        const qty = parseInt(document.getElementById(id).value) || 0;
+        const qty = parseInt(document.getElementById(id)?.value) || 0;
         total += qty * prices[id];
       });
       document.getElementById('total').textContent = total;
     }
-    document.querySelectorAll('select').forEach(select => {
-      select.addEventListener('change', updateTotal);
-    });
 
     // Form submission
     document.getElementById('orderForm').addEventListener('submit', (e) => {
@@ -98,16 +110,14 @@
         name: document.getElementById('name').value,
         phone: document.getElementById('phone').value,
         address: document.getElementById('address').value,
-        butterChicken: parseInt(document.getElementById('butterChicken').value) || 0,
-        lachaParatha: parseInt(document.getElementById('lachaParatha').value) || 0,
-        chickenMomos: parseInt(document.getElementById('chickenMomos').value) || 0,
-        vegManchurian: parseInt(document.getElementById('vegManchurian').value) || 0,
-        paneerTikka: parseInt(document.getElementById('paneerTikka').value) || 0,
         deliveryTime: document.getElementById('deliveryTime').value,
         total: parseInt(document.getElementById('total').textContent) || 0
       };
+      Object.keys(prices).forEach(id => {
+        formData[id] = parseInt(document.getElementById(id)?.value) || 0;
+      });
       console.log('Submitting to Firebase:', formData);
-      database.ref('orders').push(formData, (error) => {
+      database.ref('orders').push(formData, error => {
         if (error) {
           document.getElementById('message').textContent = 'Error: ' + error.message;
           console.error('Firebase error:', error);
@@ -119,6 +129,9 @@
         }
       });
     });
+
+    // Load menu on page load
+    loadMenu();
   </script>
 </body>
 </html>
