@@ -116,7 +116,8 @@
         phone: document.getElementById('phone').value,
         address: document.getElementById('address').value,
         deliveryTime: document.getElementById('deliveryTime').value,
-        total: total
+        total: total,
+        status: "Pending" // Default status
       };
       Object.keys(prices).forEach(id => {
         formData[id] = parseInt(document.getElementById(id)?.value) || 0;
