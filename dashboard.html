@@ -56,6 +56,21 @@
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
+    // Load menu to map IDs to names
+    let menuMap = {};
+    function loadMenu() {
+      database.ref('menu/daily').once('value', snapshot => {
+        const menu = snapshot.val() || [];
+        menu.forEach(item => {
+          menuMap[item.id] = item.name;
+        });
+        loadOrders();
+      }, error => {
+        document.getElementById('message').textContent = 'Error loading menu: ' + error.message;
+        console.error('Menu load error:', error);
+      });
+    }
+
     // Load orders in real-time
     function loadOrders() {
       database.ref('orders').on('value', snapshot => {
@@ -64,12 +79,11 @@
         orderList.innerHTML = '';
         Object.values(orders).reverse().forEach(order => {
           const items = [];
-          if (order.butterChicken) items.push(`${order.butterChicken} Butter Chicken`);
-          if (order.lachaParatha) items.push(`${order.lachaParatha} Lacha Paratha`);
-          if (order.chickenMomos) items.push(`${order.chickenMomos} Chicken Momos`);
-          if (order.vegManchurian) items.push(`${order.vegManchurian} Veg Manchurian`);
-          if (order.paneerTikka) items.push(`${order.paneerTikka} Paneer Tikka`);
-          if (order.chilliChicken) items.push(`${order.chilliChicken} Chilli Chicken`);
+          Object.keys(order).forEach(key => {
+            if (menuMap[key] && order[key] > 0) {
+              items.push(`${order[key]} ${menuMap[key]}`);
+            }
+          });
           const row = document.createElement('tr');
           row.innerHTML = `
             <td>${order.name}</td>
@@ -86,8 +100,8 @@
       });
     }
 
-    // Load orders on start
-    loadOrders();
+    // Load menu on start
+    loadMenu();
   </script>
 </body>
 </html>
