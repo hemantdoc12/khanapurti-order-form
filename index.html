@@ -49,12 +49,12 @@
   </form>
   <p id="message"></p>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js"></script>
+  <!-- Firebase UMD SDK (v8.10.1, non-modular) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   
   <script>
-    // Your Firebase config (replace with your credentials)
+    // Firebase config (replace with your credentials)
     const firebaseConfig = {
       apiKey: "AIzaSyCnE592SJ9UGkKS-TB2C7_RwlYw-eG6gmU",
       authDomain: "khana-purti-orders.firebaseapp.com",
@@ -105,16 +105,18 @@
         deliveryTime: document.getElementById('deliveryTime').value,
         total: parseInt(document.getElementById('total').textContent) || 0
       };
-      console.log('Submitting to Firebase:', formData); // Debug
-      database.ref('orders').push(formData)
-        .then(() => {
+      console.log('Submitting to Firebase:', formData);
+      database.ref('orders').push(formData, (error) => {
+        if (error) {
+          document.getElementById('message').textContent = 'Error: ' + error.message;
+          console.error('Firebase error:', error);
+        } else {
           document.getElementById('message').textContent = 'Order saved successfully!';
           document.getElementById('orderForm').reset();
           document.getElementById('total').textContent = '0';
-        })
-        .catch(error => {
-          document.getElementById('message').textContent = 'Error: ' + error.message;
-        });
+          console.log('Order saved to Firebase');
+        }
+      });
     });
   </script>
 </body>
