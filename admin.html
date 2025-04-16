@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Khana Purti Admin</title>
+  <style>
+    body { font-family: Roboto, sans-serif; background: #fff; margin: 0; padding: 20px; }
+    header { background: #FF6200; color: white; padding: 10px; text-align: center; }
+    #adminForm { max-width: 500px; margin: auto; }
+    label { display: block; margin: 10px 0 5px; }
+    input, button { width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box; }
+    button { background: #4CAF50; color: white; border: none; cursor: pointer; }
+    button:hover { background: #45a049; }
+    #menuItems { margin-bottom: 20px; }
+    .menu-item { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🍛 Khana Purti Admin</h1>
+    <p>Update Daily Menu</p>
+  </header>
+  <form id="adminForm">
+    <div id="menuItems"></div>
+    <button type="button" id="addItem">Add Dish</button>
+    <button type="submit">Save Menu</button>
+  </form>
+  <p id="message"></p>
+
+  <!-- Firebase UMD SDK (v8.10.1) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  
+  <script>
+    // Firebase config (replace with your credentials)
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      databaseURL: "YOUR_DATABASE_URL",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    // Load current menu
+    let menuItems = [];
+    function loadMenu() {
+      database.ref('menu/daily').once('value', snapshot => {
+        menuItems = snapshot.val() || [
+          { id: 'dish1', name: '', price: 0 },
+          { id: 'dish2', name: '', price: 0 },
+          { id: 'dish3', name: '', price: 0 },
+          { id: 'dish4', name: '', price: 0 },
+          { id: 'dish5', name: '', price: 0 }
+        ];
+        renderMenuItems();
+      }, error => {
+        document.getElementById('message').textContent = 'Error loading menu: ' + error.message;
+        console.error('Firebase error:', error);
+      });
+    }
+
+    // Render menu items
+    function renderMenuItems() {
+      const menuItemsDiv = document.getElementById('menuItems');
+      menuItemsDiv.innerHTML = '';
+      menuItems.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = 'menu-item';
+        div.innerHTML = `
+          <label>Dish ${index + 1} ID *</label>
+          <input type="text" value="${item.id}" placeholder="e.g., butterChicken" onchange="updateItem(${index}, 'id', this.value)">
+          <label>Dish Name *</label>
+          <input type="text" value="${item.name}" placeholder="e.g., Butter Chicken" onchange="updateItem(${index}, 'name', this.value)">
+          <label>Price (₹) *</label>
+          <input type="number" value="${item.price}" placeholder="e.g., 250" onchange="updateItem(${index}, 'price', parseInt(this.value) || 0)">
+          <button type="button" onclick="removeItem(${index})">Remove</button>
+        `;
+        menuItemsDiv.appendChild(div);
+      });
+    }
+
+    // Update item
+    function updateItem(index, field, value) {
+      menuItems[index][field] = value;
+    }
+
+    // Add new item
+    document.getElementById('addItem').addEventListener('click', () => {
+      menuItems.push({ id: `dish${menuItems.length + 1}`, name: '', price: 0 });
+      renderMenuItems();
+    });
+
+    // Remove item
+    function removeItem(index) {
+      menuItems.splice(index, 1);
+      renderMenuItems();
+    }
+
+    // Save menu
+    document.getElementById('adminForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const validItems = menuItems.filter(item => item.id && item.name && item.price > 0);
+      if (validItems.length === 0) {
+        document.getElementById('message').textContent = 'Error: Add at least one valid dish.';
+        return;
+      }
+      database.ref('menu/daily').set(validItems, error => {
+        if (error) {
+          document.getElementById('message').textContent = 'Error: ' + error.message;
+          console.error('Firebase error:', error);
+        } else {
+          document.getElementById('message').textContent = 'Menu saved successfully!';
+          console.log('Menu saved to Firebase');
+        }
+      });
+    });
+
+    // Load menu on start
+    loadMenu();
+  </script>
+</body>
+</html>
