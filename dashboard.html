@@ -4,27 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Khana Purti Order Dashboard</title>
-  <style>
-    body { font-family: Roboto, sans-serif; background: #fff; margin: 0; padding: 20px; }
-    header { background: #FF6200; color: white; padding: 10px; text-align: center; }
-    .container { display: flex; max-width: 1200px; margin: auto; }
-    .tables { flex: 3; }
-    .summary { flex: 1; margin-left: 20px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; }
-    table { width: 100%; margin-bottom: 20px; border-collapse: collapse; }
-    th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
-    th { background: #f5f5f5; }
-    select { padding: 5px; }
-    #message { text-align: center; color: red; }
-    h3 { margin-top: 0; }
-    .summary h3 { text-align: center; }
-    .summary p { margin: 5px 0; }
-    @media (max-width: 800px) {
-      .container { flex-direction: column; }
-      .summary { margin-left: 0; margin-top: 20px; }
-      table, th, td { font-size: 14px; }
-      td { word-wrap: break-word; }
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header>
@@ -37,6 +17,7 @@
       <table id="receivedTable">
         <thead>
           <tr>
+            <th>Order ID</th>
             <th>Name</th>
             <th>Items</th>
             <th>Total (₹)</th>
@@ -50,6 +31,7 @@
       <table id="pendingTable">
         <thead>
           <tr>
+            <th>Order ID</th>
             <th>Name</th>
             <th>Items</th>
             <th>Total (₹)</th>
@@ -63,6 +45,7 @@
       <table id="preparingTable">
         <thead>
           <tr>
+            <th>Order ID</th>
             <th>Name</th>
             <th>Items</th>
             <th>Total (₹)</th>
@@ -76,6 +59,7 @@
       <table id="deliveredTable">
         <thead>
           <tr>
+            <th>Order ID</th>
             <th>Name</th>
             <th>Items</th>
             <th>Total (₹)</th>
@@ -87,12 +71,14 @@
       </table>
     </div>
     <div class="summary">
-      <h3>Total Orders</h3>
+      <h3>Order Summary</h3>
       <p>Total Received: <span id="totalReceivedCount">0</span></p>
       <p>Received: <span id="receivedCount">0</span></p>
       <p>Pending: <span id="pendingCount">0</span></p>
       <p>Preparing: <span id="preparingCount">0</span></p>
       <p>Delivered: <span id="deliveredCount">0</span></p>
+      <p>Total Value (₹): <span id="totalValue">0</span></p>
+      <button id="exportPdf">Export PDF</button>
     </div>
   </div>
   <p id="message"></p>
@@ -100,23 +86,26 @@
   <!-- Firebase UMD SDK (v8.10.1) -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <!-- jsPDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   
   <script>
     // Firebase config (replace with your credentials)
     const firebaseConfig = {
-     apiKey: "AIzaSyCnE592SJ9UGkKS-TB2C7_RwlYw-eG6gmU",
-    authDomain: "khana-purti-orders.firebaseapp.com",
-    databaseURL: "https://khana-purti-orders-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "khana-purti-orders",
-    storageBucket: "khana-purti-orders.firebasestorage.app",
-    messagingSenderId: "246464758996",
-    appId: "1:246464758996:web:888ec1ef777d4d48396741",
-    measurementId: "G-3ZJD9JSXY0"
+      apiKey: "AIzaSyCnE592SJ9UGkKS-TB2C7_RwlYw-eG6gmU",
+      authDomain: "khana-purti-orders.firebaseapp.com",
+      databaseURL: "https://khana-purti-orders-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "khana-purti-orders",
+      storageBucket: "khana-purti-orders.firebasestorage.app",
+      messagingSenderId: "246464758996",
+      appId: "1:246464758996:web:888ec1ef777d4d48396741",
+      measurementId: "G-3ZJD9JSXY0"
     };
 
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
+    const { jsPDF } = window.jspdf;
 
     // Load menu to map IDs to names
     let menuMap = {};
@@ -137,7 +126,7 @@
     function loadOrders() {
       const statuses = ['received', 'pending', 'preparing', 'delivered'];
       const counts = { received: 0, pending: 0, preparing: 0, delivered: 0 };
-      let totalReceived = 0;
+      let totalReceived = 0, totalValue = 0;
       database.ref('stats/totalReceived').once('value', snapshot => {
         totalReceived = snapshot.val() || 0;
         document.getElementById('totalReceivedCount').textContent = totalReceived;
@@ -155,8 +144,10 @@
                 items.push(`${order[key]} ${menuMap[key]}`);
               }
             });
+            totalValue += order.total || 0;
             const row = document.createElement('tr');
             row.innerHTML = `
+              <td>${order.orderId || orderId}</td>
               <td>${order.name}</td>
               <td>${items.join(', ') || 'None'}</td>
               <td>${order.total}</td>
@@ -176,6 +167,7 @@
           });
           document.getElementById(`${status}Table`).style.display = counts[status] ? 'table' : 'none';
           document.getElementById(`${status}Count`).textContent = counts[status];
+          document.getElementById('totalValue').textContent = totalValue;
           document.getElementById('message').textContent = Object.values(counts).reduce((a, b) => a + b, 0) ? '' : 'No orders yet.';
         }, error => {
           document.getElementById('message').textContent = 'Error loading orders: ' + error.message;
@@ -199,6 +191,51 @@
         console.error('Firebase error:', error);
       });
     }
+
+    // PDF export
+    document.getElementById('exportPdf').addEventListener('click', () => {
+      const doc = new jsPDF();
+      const today = new Date().toISOString().split('T')[0];
+      let totalValue = 0, todayCount = 0, todayValue = 0;
+      const statuses = ['received', 'pending', 'preparing', 'delivered'];
+      const counts = { received: 0, pending: 0, preparing: 0, delivered: 0 };
+      
+      // Fetch all orders
+      Promise.all(statuses.map(status => 
+        database.ref(`orders/${status}`).once('value').then(snapshot => {
+          const orders = snapshot.val() || {};
+          counts[status] = Object.keys(orders).length;
+          Object.values(orders).forEach(order => {
+            totalValue += order.total || 0;
+            if (order.timestamp.startsWith(today)) {
+              todayCount++;
+              todayValue += order.total || 0;
+            }
+          });
+          return { status, count: counts[status] };
+        })
+      )).then(() => {
+        // Generate PDF
+        doc.setFontSize(16);
+        doc.text('Khana Purti Order Summary', 20, 20);
+        doc.setFontSize(12);
+        doc.text(`Date: ${today}`, 20, 30);
+        doc.text('Daily Summary', 20, 40);
+        doc.text(`Orders Today: ${todayCount}`, 20, 50);
+        doc.text(`Total Value Today (₹): ${todayValue}`, 20, 60);
+        doc.text('Cumulative Summary', 20, 80);
+        doc.text(`Total Received: ${document.getElementById('totalReceivedCount').textContent}`, 20, 90);
+        doc.text(`Received: ${counts.received}`, 20, 100);
+        doc.text(`Pending: ${counts.pending}`, 20, 110);
+        doc.text(`Preparing: ${counts.preparing}`, 20, 120);
+        doc.text(`Delivered: ${counts.delivered}`, 20, 130);
+        doc.text(`Total Value (₹): ${totalValue}`, 20, 140);
+        doc.save(`khana_purti_summary_${today}.pdf`);
+      }).catch(error => {
+        document.getElementById('message').textContent = 'Error generating PDF: ' + error.message;
+        console.error('PDF error:', error);
+      });
+    });
 
     // Load menu on start
     loadMenu();
