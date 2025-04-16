@@ -1,17 +1,17 @@
 :root {
-  --primary-color: #ff6b35; /* Updated primary orange */
-  --primary-dark: #e65c00;
-  --secondary-color: #004e89; /* Complementary blue */
-  --accent-color: #ffb563;
+  --primary-color: #2A5CAA; /* Deep professional blue */
+  --primary-dark: #1D4A8B;
+  --secondary-color: #4A6FA5; /* Complementary muted blue */
+  --accent-color: #FF7D4D; /* Kept as accent but more muted */
   --light-bg: #f8f9fa;
-  --text-dark: #2b2d42;
-  --text-medium: #4a4e69;
-  --text-light: #8d99ae;
-  --success-color: #4caf50;
-  --error-color: #ef476f;
-  --border-radius: 8px;
-  --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --transition: all 0.3s ease;
+  --text-dark: #2B2D42;
+  --text-medium: #4A4E69;
+  --text-light: #8D99AE;
+  --success-color: #4CAF50;
+  --error-color: #EF476F;
+  --border-radius: 6px; /* Slightly smaller for more refinement */
+  --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  --transition: all 0.2s ease;
 }
 
 body {
@@ -21,91 +21,100 @@ body {
   padding: 0;
   color: var(--text-dark);
   line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Improved header with better gradient and spacing */
+/* Sophisticated header with subtle gradient */
 header {
   background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
   color: white;
-  padding: 2rem 20px;
+  padding: 2.5rem 20px;
   text-align: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
+  position: relative;
+}
+
+header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, rgba(255,125,77,0.8), rgba(42,92,170,0.8));
 }
 
 header h1 {
   margin: 0;
-  font-size: 2.5rem;
-  font-weight: 700;
-  letter-spacing: -0.5px;
+  font-size: 2.4rem;
+  font-weight: 600;
+  letter-spacing: -0.25px;
 }
 
 header p {
-  margin: 0.75rem 0 0;
+  margin: 1rem auto 0;
   font-size: 1.1rem;
   opacity: 0.9;
   max-width: 700px;
-  margin-left: auto;
-  margin-right: auto;
+  line-height: 1.7;
+  font-weight: 300;
 }
 
-/* Container improvements */
+/* Refined container styling */
 .form-container, .container {
-  max-width: 1200px;
+  max-width: 1100px;
   margin: 0 auto 3rem;
-  padding: 0 20px;
+  padding: 0 30px;
 }
 
-/* Enhanced form styling */
+/* Elegant form styling */
 form, .tables {
   background: white;
-  padding: 2rem;
+  padding: 2.5rem;
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
   margin-bottom: 2rem;
+  border: 1px solid rgba(0, 0, 0, 0.03);
 }
 
-/* Better form elements */
+/* Premium form elements */
 .form-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
 }
 
 label {
   display: block;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.6rem;
   font-weight: 500;
   color: var(--text-medium);
   font-size: 0.95rem;
+  letter-spacing: 0.2px;
 }
 
 input, select, textarea {
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 0.8rem 1.2rem;
   border: 1px solid #e0e0e0;
   border-radius: var(--border-radius);
   box-sizing: border-box;
   font-size: 1rem;
   transition: var(--transition);
   background-color: #fcfcfc;
+  font-family: 'Inter', sans-serif;
 }
 
 input:focus, select:focus, textarea:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.2);
+  box-shadow: 0 0 0 2px rgba(42, 92, 170, 0.1);
   background-color: white;
 }
 
-textarea {
-  resize: vertical;
-  min-height: 120px;
-}
-
-/* Improved buttons */
+/* Refined buttons */
 button, .btn {
   background: var(--primary-color);
   color: white;
-  padding: 0.75rem 1.5rem;
+  padding: 0.8rem 1.75rem;
   border: none;
   border-radius: var(--border-radius);
   cursor: pointer;
@@ -114,12 +123,13 @@ button, .btn {
   transition: var(--transition);
   display: inline-block;
   text-align: center;
-  width: auto;
+  letter-spacing: 0.3px;
 }
 
 button:hover, .btn:hover {
   background: var(--primary-dark);
-  transform: translateY(-2px);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 button.secondary {
@@ -127,77 +137,61 @@ button.secondary {
 }
 
 button.secondary:hover {
-  background: #003d6b;
+  background: #3a5d8a;
 }
 
-/* Feedback messages */
-#message {
-  text-align: center;
-  margin: 1.5rem 0;
-  font-size: 1rem;
-  padding: 1rem;
-  border-radius: var(--border-radius);
-}
-
-.message-success {
-  background-color: rgba(76, 175, 80, 0.1);
-  color: var(--success-color);
-  border: 1px solid rgba(76, 175, 80, 0.3);
-}
-
-.message-error {
-  background-color: rgba(239, 71, 111, 0.1);
-  color: var(--error-color);
-  border: 1px solid rgba(239, 71, 111, 0.3);
-}
-
-/* Enhanced tables */
+/* Premium tables */
 table {
   width: 100%;
   margin-bottom: 2rem;
   border-collapse: collapse;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 th, td {
-  border: 1px solid #e0e0e0;
-  padding: 1rem;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 1.1rem;
   text-align: left;
 }
 
 th {
-  background: var(--secondary-color);
+  background: var(--primary-color);
   color: white;
   font-weight: 500;
+  letter-spacing: 0.3px;
 }
 
 tr:nth-child(even) {
-  background-color: #f9f9f9;
+  background-color: #fcfcfc;
 }
 
 tr:hover {
-  background-color: #f1f1f1;
+  background-color: #f8f8f8;
 }
 
-/* Summary card improvements */
+/* Enhanced summary cards */
 .summary {
   background: white;
-  padding: 1.5rem;
+  padding: 2rem;
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
   margin-bottom: 2rem;
+  border: 1px solid rgba(0, 0, 0, 0.03);
 }
 
 .summary h3 {
   text-align: center;
-  margin: 0 0 1.5rem;
-  color: var(--secondary-color);
+  margin: 0 0 1.75rem;
+  color: var(--primary-color);
   font-size: 1.4rem;
+  font-weight: 600;
 }
 
 .summary p {
-  margin: 1rem 0;
+  margin: 1.1rem 0;
   font-size: 1rem;
+  line-height: 1.7;
 }
 
 .summary-value {
@@ -205,50 +199,21 @@ tr:hover {
   color: var(--primary-color);
 }
 
-/* Utility classes */
-.text-center {
-  text-align: center;
-}
-
-.mt-1 { margin-top: 0.5rem; }
-.mt-2 { margin-top: 1rem; }
-.mt-3 { margin-top: 1.5rem; }
-.mt-4 { margin-top: 2rem; }
-
-/* Responsive improvements */
+/* Refined responsive design */
 @media (max-width: 800px) {
+  header {
+    padding: 2rem 20px;
+  }
+  
   header h1 {
     font-size: 2rem;
   }
   
-  header p {
-    font-size: 1rem;
-  }
-  
   .form-container, .container {
-    padding: 0 15px;
+    padding: 0 20px;
   }
   
   form, .tables {
-    padding: 1.5rem;
+    padding: 1.75rem;
   }
-  
-  th, td {
-    padding: 0.75rem;
-    font-size: 0.9rem;
-  }
-  
-  button, .btn {
-    width: 100%;
-  }
-}
-
-/* Animation for better UX */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.form-container, .container {
-  animation: fadeIn 0.4s ease-out;
 }
