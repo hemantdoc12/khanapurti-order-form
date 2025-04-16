@@ -1,112 +1,59 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Khana Purti Order</title>
-  <style>
-    body { font-family: Roboto, sans-serif; background: #fff; margin: 0; padding: 20px; }
-    header { background: #FF6200; color: white; padding: 10px; text-align: center; }
-    form { max-width: 500px; margin: auto; }
-    label { display: block; margin: 10px 0 5px; }
-    input, select, textarea { width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box; }
-    #total { font-weight: bold; }
-    button { background: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; width: 100%; }
-    button:hover { background: #45a049; }
-  </style>
+  <title>Khana Purti Form</title>
 </head>
 <body>
-  <header>
-    <h1>🍛 Khana Purti Order Form</h1>
-    <p>Fresh North Indian & Chinese dishes, delivered!</p>
-  </header>
+  <h1>Khana Purti Order Form</h1>
   <form id="orderForm">
-    <label>Name *</label>
-    <input type="text" id="name" required>
-    <label>WhatsApp Number *</label>
-    <input type="tel" id="phone" pattern="[0-9]{10}" title="Enter 10 digits (e.g., 9876543210)" required>
-    <label>Delivery Address *</label>
-    <textarea id="address" rows="4" required></textarea>
-    <label>Butter Chicken (₹250)</label>
-    <select id="butterChicken"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select>
-    <label>Lacha Paratha (₹50)</label>
-    <select id="lachaParatha"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select>
-    <label>Chicken Momos (₹150)</label>
-    <select id="chickenMomos"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select>
-    <label>Veg Manchurian (₹180)</label>
-    <select id="vegManchurian"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select>
-    <label>Paneer Tikka (₹200)</label>
-    <select id="paneerTikka"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select>
-    <label>Delivery Time *</label>
-    <select id="deliveryTime" required>
-      <option value="12:00 PM - 1:00 PM">12:00 PM - 1:00 PM</option>
-      <option value="1:00 PM - 2:00 PM">1:00 PM - 2:00 PM</option>
-      <option value="6:00 PM - 7:00 PM">6:00 PM - 7:00 PM</option>
-      <option value="7:00 PM - 8:00 PM">7:00 PM - 8:00 PM</option>
-    </select>
-    <p>Total: ₹<span id="total">0</span></p>
+    <label for="item">Item:</label>
+    <input type="text" id="item" name="item" required><br><br>
+    <label for="quantity">Quantity:</label>
+    <input type="number" id="quantity" name="quantity" required><br><br>
     <button type="submit">Submit Order</button>
   </form>
-<script>
-  const prices = {
-    butterChicken: 250,
-    lachaParatha: 50,
-    chickenMomos: 150,
-    vegManchurian: 180,
-    paneerTikka: 200
-  };
-  function updateTotal() {
-    let total = 0;
-    Object.keys(prices).forEach(id => {
-      const qty = parseInt(document.getElementById(id).value) || 0;
-      total += qty * prices[id];
-    });
-    document.getElementById('total').textContent = total;
-  }
-  document.querySelectorAll('select').forEach(select => {
-    select.addEventListener('change', updateTotal);
-  });
-  document.getElementById('orderForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const formData = {
-      timestamp: new Date().toISOString(),
-      name: document.getElementById('name').value,
-      phone: document.getElementById('phone').value,
-      address: document.getElementById('address').value,
-      butterChicken: document.getElementById('butterChicken').value,
-      lachaParatha: document.getElementById('lachaParatha').value,
-      chickenMomos: document.getElementById('chickenMomos').value,
-      vegManchurian: document.getElementById('vegManchurian').value,
-      paneerTikka: document.getElementById('paneerTikka').value,
-      deliveryTime: document.getElementById('deliveryTime').value,
-      total: document.getElementById('total').textContent
+  <p id="message"></p>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js"></script>
+  
+  <script>
+    // Your Firebase config (replace with yours from Firebase Console)
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "khana-purti-orders.firebaseapp.com",
+      databaseURL: "https://khana-purti-orders-default-rtdb.firebaseio.com/",
+      projectId: "khana-purti-orders",
+      storageBucket: "khana-purti-orders.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
     };
-    try {
-      console.log('Sending formData:', formData); // Debug
-      const response = await fetch('https://script.google.com/macros/s/AKfycbwuXGLDIG50maT8yGKRufeueKMBvspqrX_sglR9vt5BEJb6htO4ipF70YdpclJPEDY2/exec', {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams(formData).toString(),
-      mode: 'no-cors', // Only if you don't need to read the response
-      redirect: 'follow'
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    // Form submission
+    document.getElementById('orderForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      const item = document.getElementById('item').value;
+      const quantity = document.getElementById('quantity').value;
+      
+      // Push data to Firebase
+      database.ref('orders').push({
+        item: item,
+        quantity: Number(quantity),
+        timestamp: new Date().toISOString()
+      }).then(() => {
+        document.getElementById('message').textContent = 'Order saved successfully!';
+        document.getElementById('orderForm').reset();
+      }).catch((error) => {
+        document.getElementById('message').textContent = 'Error: ' + error.message;
+      });
     });
-      console.log('Fetch response:', response); // Debug
-      const result = await response.json();
-      console.log('Fetch result:', result); // Debug
-      if (result.status === 'success') {
-        alert('Order submitted! Total: ₹' + formData.total + '. Saved to our system.');
-      } else {
-        alert('Error saving order: ' + result.message);
-      }
-    } catch (error) {
-      console.error('Fetch error:', error); // Debug
-      alert('Connection error: ' + error.message + '. Please try again.');
-    }
-  });
-</script>
+  </script>
 </body>
 </html>
-    
