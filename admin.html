@@ -4,16 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Khana Purti Admin</title>
+  <link rel="stylesheet" href="styles.css">
   <style>
-    body { font-family: Roboto, sans-serif; background: #fff; margin: 0; padding: 20px; }
-    header { background: #FF6200; color: white; padding: 10px; text-align: center; }
-    #adminForm { max-width: 500px; margin: auto; }
-    label { display: block; margin: 10px 0 5px; }
-    input, button { width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box; }
-    button { background: #4CAF50; color: white; border: none; cursor: pointer; }
-    button:hover { background: #45a049; }
-    #menuItems { margin-bottom: 20px; }
-    .menu-item { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }
+    .menu-item { border: 1px solid #e0e0e0; padding: 15px; margin-bottom: 15px; border-radius: 4px; }
+    .menu-item button { background: #ff4444; }
+    .menu-item button:hover { background: #cc0000; }
   </style>
 </head>
 <body>
@@ -21,12 +16,14 @@
     <h1>🍛 Khana Purti Admin</h1>
     <p>Update Daily Menu</p>
   </header>
-  <form id="adminForm">
-    <div id="menuItems"></div>
-    <button type="button" id="addItem">Add Dish</button>
-    <button type="submit">Save Menu</button>
-  </form>
-  <p id="message"></p>
+  <div class="form-container">
+    <form id="adminForm">
+      <div id="menuItems"></div>
+      <button type="button" id="addItem">Add Dish</button>
+      <button type="submit">Save Menu</button>
+    </form>
+    <p id="message"></p>
+  </div>
 
   <!-- Firebase UMD SDK (v8.10.1) -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
