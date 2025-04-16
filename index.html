@@ -4,42 +4,34 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Khana Purti Order</title>
-  <style>
-    body { font-family: Roboto, sans-serif; background: #fff; margin: 0; padding: 20px; }
-    header { background: #FF6200; color: white; padding: 10px; text-align: center; }
-    form { max-width: 500px; margin: auto; }
-    label { display: block; margin: 10px 0 5px; }
-    input, select, textarea { width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box; }
-    #total { font-weight: bold; }
-    button { background: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; width: 100%; }
-    button:hover { background: #45a049; }
-    #message { text-align: center; }
-  </style>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header>
     <h1>🍛 Khana Purti Order Form</h1>
     <p>Fresh North Indian & Chinese dishes, delivered!</p>
   </header>
-  <form id="orderForm">
-    <label>Name *</label>
-    <input type="text" id="name" required>
-    <label>WhatsApp Number *</label>
-    <input type="tel" id="phone" pattern="[0-9]{10}" title="Enter 10 digits (e.g., 9876543210)" required>
-    <label>Delivery Address *</label>
-    <textarea id="address" rows="4" required></textarea>
-    <div id="menuItems"></div>
-    <label>Delivery Time *</label>
-    <select id="deliveryTime" required>
-      <option value="12:00 PM - 1:00 PM">12:00 PM - 1:00 PM</option>
-      <option value="1:00 PM - 2:00 PM">1:00 PM - 2:00 PM</option>
-      <option value="6:00 PM - 7:00 PM">6:00 PM - 7:00 PM</option>
-      <option value="7:00 PM - 8:00 PM">7:00 PM - 8:00 PM</option>
-    </select>
-    <p>Total: ₹<span id="total">0</span></p>
-    <button type="submit">Submit Order</button>
-  </form>
-  <p id="message"></p>
+  <div class="form-container">
+    <form id="orderForm">
+      <label>Name *</label>
+      <input type="text" id="name" required>
+      <label>WhatsApp Number *</label>
+      <input type="tel" id="phone" pattern="[0-9]{10}" title="Enter 10 digits (e.g., 9876543210)" required>
+      <label>Delivery Address *</label>
+      <textarea id="address" rows="4" required></textarea>
+      <div id="menuItems"></div>
+      <label>Delivery Time *</label>
+      <select id="deliveryTime" required>
+        <option value="12:00 PM - 1:00 PM">12:00 PM - 1:00 PM</option>
+        <option value="1:00 PM - 2:00 PM">1:00 PM - 2:00 PM</option>
+        <option value="6:00 PM - 7:00 PM">6:00 PM - 7:00 PM</option>
+        <option value="7:00 PM - 8:00 PM">7:00 PM - 8:00 PM</option>
+      </select>
+      <p>Total: ₹<span id="total">0</span></p>
+      <button type="submit">Submit Order</button>
+    </form>
+    <p id="message"></p>
+  </div>
 
   <!-- Firebase UMD SDK (v8.10.1) -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -103,6 +95,11 @@
       document.getElementById('total').textContent = total;
     }
 
+    // Generate random 6-digit Order ID
+    function generateOrderId() {
+      return Math.floor(100000 + Math.random() * 900000);
+    }
+
     // Form submission
     document.getElementById('orderForm').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -113,6 +110,7 @@
       }
       const formData = {
         timestamp: new Date().toISOString(),
+        orderId: generateOrderId(),
         name: document.getElementById('name').value,
         phone: document.getElementById('phone').value,
         address: document.getElementById('address').value,
@@ -125,13 +123,12 @@
       });
       console.log('Submitting to Firebase:', formData);
       try {
-        const newOrderRef = await database.ref('orders/received').push(formData);
-        const orderId = newOrderRef.key;
+        await database.ref('orders/received').push(formData);
         await database.ref('stats/totalReceived').transaction(count => (count || 0) + 1);
-        document.getElementById('message').textContent = `Order received! Track with ID: ${orderId}`;
+        document.getElementById('message').textContent = `Order received! Track with ID: ${formData.orderId}`;
         document.getElementById('orderForm').reset();
         document.getElementById('total').textContent = '0';
-        console.log('Order saved to Firebase with ID:', orderId);
+        console.log('Order saved to Firebase with ID:', formData.orderId);
       } catch (error) {
         document.getElementById('message').textContent = 'Error: ' + error.message;
         console.error('Firebase error:', error);
