@@ -7,12 +7,20 @@
   <style>
     body { font-family: Roboto, sans-serif; background: #fff; margin: 0; padding: 20px; }
     header { background: #FF6200; color: white; padding: 10px; text-align: center; }
-    table { width: 100%; max-width: 800px; margin: 20px auto; border-collapse: collapse; }
+    .container { display: flex; max-width: 1200px; margin: auto; }
+    .tables { flex: 3; }
+    .summary { flex: 1; margin-left: 20px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; }
+    table { width: 100%; margin-bottom: 20px; border-collapse: collapse; }
     th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
     th { background: #f5f5f5; }
     select { padding: 5px; }
     #message { text-align: center; color: red; }
-    @media (max-width: 600px) {
+    h3 { margin-top: 0; }
+    .summary h3 { text-align: center; }
+    .summary p { margin: 5px 0; }
+    @media (max-width: 800px) {
+      .container { flex-direction: column; }
+      .summary { margin-left: 0; margin-top: 20px; }
       table, th, td { font-size: 14px; }
       td { word-wrap: break-word; }
     }
@@ -23,18 +31,69 @@
     <h1>🍛 Khana Purti Order Dashboard</h1>
     <p>Live Kitchen Orders</p>
   </header>
-  <table id="orderTable">
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Items</th>
-        <th>Total (₹)</th>
-        <th>Delivery Time</th>
-        <th>Status</th>
-      </tr>
-    </thead>
-    <tbody id="orderList"></tbody>
-  </table>
+  <div class="container">
+    <div class="tables">
+      <h3>Received Orders</h3>
+      <table id="receivedTable">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Items</th>
+            <th>Total (₹)</th>
+            <th>Delivery Time</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="receivedList"></tbody>
+      </table>
+      <h3>Pending Orders</h3>
+      <table id="pendingTable">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Items</th>
+            <th>Total (₹)</th>
+            <th>Delivery Time</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="pendingList"></tbody>
+      </table>
+      <h3>Preparing Orders</h3>
+      <table id="preparingTable">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Items</th>
+            <th>Total (₹)</th>
+            <th>Delivery Time</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="preparingList"></tbody>
+      </table>
+      <h3>Delivered Orders</h3>
+      <table id="deliveredTable">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Items</th>
+            <th>Total (₹)</th>
+            <th>Delivery Time</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="deliveredList"></tbody>
+      </table>
+    </div>
+    <div class="summary">
+      <h3>Total Orders</h3>
+      <p>Received: <span id="receivedCount">0</span></p>
+      <p>Pending: <span id="pendingCount">0</span></p>
+      <p>Preparing: <span id="preparingCount">0</span></p>
+      <p>Delivered: <span id="deliveredCount">0</span></p>
+    </div>
+  </div>
   <p id="message"></p>
 
   <!-- Firebase UMD SDK (v8.10.1) -->
@@ -75,49 +134,61 @@
 
     // Load orders in real-time
     function loadOrders() {
-      database.ref('orders').on('value', snapshot => {
-        const orders = snapshot.val() || {};
-        const orderList = document.getElementById('orderList');
-        orderList.innerHTML = '';
-        Object.entries(orders).reverse().forEach(([orderId, order]) => {
-          const items = [];
-          Object.keys(order).forEach(key => {
-            if (menuMap[key] && order[key] > 0) {
-              items.push(`${order[key]} ${menuMap[key]}`);
-            }
+      const statuses = ['received', 'pending', 'preparing', 'delivered'];
+      const counts = { received: 0, pending: 0, preparing: 0, delivered: 0 };
+      statuses.forEach(status => {
+        database.ref(`orders/${status}`).on('value', snapshot => {
+          const orders = snapshot.val() || {};
+          const orderList = document.getElementById(`${status}List`);
+          orderList.innerHTML = '';
+          counts[status] = Object.keys(orders).length;
+          Object.entries(orders).forEach(([orderId, order]) => {
+            const items = [];
+            Object.keys(order).forEach(key => {
+              if (menuMap[key] && order[key] > 0) {
+                items.push(`${order[key]} ${menuMap[key]}`);
+              }
+            });
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td>${order.name}</td>
+              <td>${items.join(', ') || 'None'}</td>
+              <td>${order.total}</td>
+              <td>${order.deliveryTime}</td>
+              <td>
+                <select onchange="updateStatus('${status}', '${orderId}', this.value)">
+                  <option value="received" ${order.status === 'Received' ? 'selected' : ''}>Received</option>
+                  <option value="pending" ${order.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                  <option value="preparing" ${order.status === 'Preparing' ? 'selected' : ''}>Preparing</option>
+                  <option value="delivered" ${order.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                </select>
+              </td>
+            `;
+            orderList.appendChild(row);
           });
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td>${order.name}</td>
-            <td>${items.join(', ') || 'None'}</td>
-            <td>${order.total}</td>
-            <td>${order.deliveryTime}</td>
-            <td>
-              <select onchange="updateStatus('${orderId}', this.value)">
-                <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>Pending</option>
-                <option value="Preparing" ${order.status === 'Preparing' ? 'selected' : ''}>Preparing</option>
-                <option value="Delivered" ${order.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
-              </select>
-            </td>
-          `;
-          orderList.appendChild(row);
+          document.getElementById(`${status}Table`).style.display = counts[status] ? 'table' : 'none';
+          document.getElementById(`${status}Count`).textContent = counts[status];
+          document.getElementById('message').textContent = Object.values(counts).reduce((a, b) => a + b, 0) ? '' : 'No orders yet.';
+        }, error => {
+          document.getElementById('message').textContent = 'Error loading orders: ' + error.message;
+          console.error('Firebase error:', error);
         });
-        document.getElementById('message').textContent = Object.keys(orders).length ? '' : 'No orders yet.';
-      }, error => {
-        document.getElementById('message').textContent = 'Error loading orders: ' + error.message;
-        console.error('Firebase error:', error);
       });
     }
 
     // Update order status
-    function updateStatus(orderId, status) {
-      database.ref(`orders/${orderId}/status`).set(status, error => {
-        if (error) {
-          document.getElementById('message').textContent = 'Error updating status: ' + error.message;
-          console.error('Firebase error:', error);
-        } else {
-          console.log(`Order ${orderId} status updated to ${status}`);
+    function updateStatus(currentStatus, orderId, newStatus) {
+      if (currentStatus === newStatus) return;
+      database.ref(`orders/${currentStatus}/${orderId}`).once('value', snapshot => {
+        const order = snapshot.val();
+        if (order) {
+          database.ref(`orders/${newStatus}`).push({ ...order, status: newStatus.charAt(0).toUpperCase() + newStatus.slice(1) });
+          database.ref(`orders/${currentStatus}/${orderId}`).remove();
+          console.log(`Order ${orderId} moved from ${currentStatus} to ${newStatus}`);
         }
+      }, error => {
+        document.getElementById('message').textContent = 'Error updating status: ' + error.message;
+        console.error('Firebase error:', error);
       });
     }
 
