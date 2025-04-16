@@ -13,6 +13,7 @@
     #total { font-weight: bold; }
     button { background: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; width: 100%; }
     button:hover { background: #45a049; }
+    #message { text-align: center; }
   </style>
 </head>
 <body>
@@ -47,14 +48,13 @@
   <script>
     // Firebase config (replace with your credentials)
     const firebaseConfig = {
-      apiKey: "AIzaSyCnE592SJ9UGkKS-TB2C7_RwlYw-eG6gmU",
-      authDomain: "khana-purti-orders.firebaseapp.com",
-      databaseURL: "https://khana-purti-orders-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "khana-purti-orders",
-      storageBucket: "khana-purti-orders.firebasestorage.app",
-      messagingSenderId: "246464758996",
-      appId: "1:246464758996:web:888ec1ef777d4d48396741",
-      measurementId: "G-3ZJD9JSXY0"
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      databaseURL: "YOUR_DATABASE_URL",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
     };
 
     // Initialize Firebase
@@ -117,28 +117,20 @@
         address: document.getElementById('address').value,
         deliveryTime: document.getElementById('deliveryTime').value,
         total: total,
-        status: "Received" // Default status
+        status: "Received"
       };
       Object.keys(prices).forEach(id => {
         formData[id] = parseInt(document.getElementById(id)?.value) || 0;
       });
       console.log('Submitting to Firebase:', formData);
       try {
-        await database.ref('orders/received').push(formData);
-        const response = await fetch('http://localhost:5001/khana-purti-orders/us-central1/sendWhatsApp', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData)
-        });
-        const result = await response.json();
-        if (result.status === 'success') {
-          document.getElementById('message').textContent = 'Order saved and confirmation sent!';
-        } else {
-          document.getElementById('message').textContent = 'Order saved, but confirmation failed: ' + result.message;
-        }
+        const newOrderRef = await database.ref('orders/received').push(formData);
+        const orderId = newOrderRef.key;
+        await database.ref('stats/totalReceived').transaction(count => (count || 0) + 1);
+        document.getElementById('message').textContent = `Order received! Track with ID: ${orderId}`;
         document.getElementById('orderForm').reset();
         document.getElementById('total').textContent = '0';
-        console.log('Order saved to Firebase');
+        console.log('Order saved to Firebase with ID:', orderId);
       } catch (error) {
         document.getElementById('message').textContent = 'Error: ' + error.message;
         console.error('Firebase error:', error);
