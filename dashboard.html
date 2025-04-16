@@ -88,6 +88,7 @@
     </div>
     <div class="summary">
       <h3>Total Orders</h3>
+      <p>Total Received: <span id="totalReceivedCount">0</span></p>
       <p>Received: <span id="receivedCount">0</span></p>
       <p>Pending: <span id="pendingCount">0</span></p>
       <p>Preparing: <span id="preparingCount">0</span></p>
@@ -103,14 +104,14 @@
   <script>
     // Firebase config (replace with your credentials)
     const firebaseConfig = {
-      apiKey: "AIzaSyCnE592SJ9UGkKS-TB2C7_RwlYw-eG6gmU",
-      authDomain: "khana-purti-orders.firebaseapp.com",
-      databaseURL: "https://khana-purti-orders-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "khana-purti-orders",
-      storageBucket: "khana-purti-orders.firebasestorage.app",
-      messagingSenderId: "246464758996",
-      appId: "1:246464758996:web:888ec1ef777d4d48396741",
-      measurementId: "G-3ZJD9JSXY0"
+     apiKey: "AIzaSyCnE592SJ9UGkKS-TB2C7_RwlYw-eG6gmU",
+    authDomain: "khana-purti-orders.firebaseapp.com",
+    databaseURL: "https://khana-purti-orders-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "khana-purti-orders",
+    storageBucket: "khana-purti-orders.firebasestorage.app",
+    messagingSenderId: "246464758996",
+    appId: "1:246464758996:web:888ec1ef777d4d48396741",
+    measurementId: "G-3ZJD9JSXY0"
     };
 
     // Initialize Firebase
@@ -136,6 +137,11 @@
     function loadOrders() {
       const statuses = ['received', 'pending', 'preparing', 'delivered'];
       const counts = { received: 0, pending: 0, preparing: 0, delivered: 0 };
+      let totalReceived = 0;
+      database.ref('stats/totalReceived').once('value', snapshot => {
+        totalReceived = snapshot.val() || 0;
+        document.getElementById('totalReceivedCount').textContent = totalReceived;
+      });
       statuses.forEach(status => {
         database.ref(`orders/${status}`).on('value', snapshot => {
           const orders = snapshot.val() || {};
@@ -156,12 +162,14 @@
               <td>${order.total}</td>
               <td>${order.deliveryTime}</td>
               <td>
-                <select onchange="updateStatus('${status}', '${orderId}', this.value)">
-                  <option value="received" ${order.status === 'Received' ? 'selected' : ''}>Received</option>
-                  <option value="pending" ${order.status === 'Pending' ? 'selected' : ''}>Pending</option>
-                  <option value="preparing" ${order.status === 'Preparing' ? 'selected' : ''}>Preparing</option>
-                  <option value="delivered" ${order.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
-                </select>
+                ${status === 'delivered' ? order.status : `
+                  <select onchange="updateStatus('${status}', '${orderId}', this.value)">
+                    <option value="received" ${order.status === 'Received' ? 'selected' : ''}>Received</option>
+                    <option value="pending" ${order.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                    <option value="preparing" ${order.status === 'Preparing' ? 'selected' : ''}>Preparing</option>
+                    <option value="delivered" ${order.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                  </select>
+                `}
               </td>
             `;
             orderList.appendChild(row);
