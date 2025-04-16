@@ -103,34 +103,48 @@
     }
 
     // Form submission
-    document.getElementById('orderForm').addEventListener('submit', (e) => {
+    document.getElementById('orderForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+      const total = parseInt(document.getElementById('total').textContent) || 0;
+      if (total === 0) {
+        document.getElementById('message').textContent = 'Error: Please select at least one dish.';
+        return;
+      }
       const formData = {
         timestamp: new Date().toISOString(),
         name: document.getElementById('name').value,
         phone: document.getElementById('phone').value,
         address: document.getElementById('address').value,
         deliveryTime: document.getElementById('deliveryTime').value,
-        total: parseInt(document.getElementById('total').textContent) || 0
+        total: total
       };
       Object.keys(prices).forEach(id => {
         formData[id] = parseInt(document.getElementById(id)?.value) || 0;
       });
       console.log('Submitting to Firebase:', formData);
-      database.ref('orders').push(formData, error => {
-        if (error) {
-          document.getElementById('message').textContent = 'Error: ' + error.message;
-          console.error('Firebase error:', error);
+      try {
+        await database.ref('orders').push(formData);
+        const response = await fetch('http://localhost:5001/khana-purti-orders/us-central1/sendWhatsApp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+        const result = await response.json();
+        if (result.status === 'success') {
+          document.getElementById('message').textContent = 'Order saved and confirmation sent!';
         } else {
-          document.getElementById('message').textContent = 'Order saved successfully!';
-          document.getElementById('orderForm').reset();
-          document.getElementById('total').textContent = '0';
-          console.log('Order saved to Firebase');
+          document.getElementById('message').textContent = 'Order saved, but confirmation failed: ' + result.message;
         }
-      });
+        document.getElementById('orderForm').reset();
+        document.getElementById('total').textContent = '0';
+        console.log('Order saved to Firebase');
+      } catch (error) {
+        document.getElementById('message').textContent = 'Error: ' + error.message;
+        console.error('Firebase error:', error);
+      }
     });
 
-    // Load menu on page load
+    // Load menu on start
     loadMenu();
   </script>
 </body>
